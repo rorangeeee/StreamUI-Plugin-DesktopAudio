@@ -1,0 +1,19 @@
+{
+  "id": "desktop-audio",
+  "name": "桌面音频与频谱",
+  "version": "1.0.1",
+  "assembly": "DesktopAudio.dll",
+  "type": "StreamUI.DesktopAudio.DesktopAudioPlugin",
+  "capabilities": [
+    "audio.waveform",
+    "audio.fft"
+  ],
+  "settingsPage": "settings.html",
+  "sdkVersion": 1,
+  "repository": "https://github.com/rorangeeee/StreamUI-Plugin-DesktopAudio",
+  "build": {
+    "kind": "dotnet",
+    "project": "DesktopAudio.csproj",
+    "sdkVersion": 1
+  }
+}
