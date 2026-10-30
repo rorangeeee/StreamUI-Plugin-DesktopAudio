@@ -1,7 +1,56 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><script src="/config-appearance.js"></script><link rel="stylesheet" href="/config-theme.css"><style>body{margin:0;font:14px system-ui;color:var(--text)}form{display:grid;gap:14px}label{display:grid;gap:6px}input,select{font:inherit;background:var(--field);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px}button{justify-self:start;background:var(--accent);color:white;border:0;border-radius:8px;padding:9px 20px;font:inherit}</style>
-<form><label>音频输出设备<select id="device"><option value="default">系统默认输出</option></select></label><label>声道（-1 为混合）<input id="channel" type="number" min="-1" max="31" value="-1"></label><label>增益<input id="gain" type="number" min="0" max="4" step="0.1" value="1"></label><button>保存音频设置</button><output id="status"></output></form>
-<script type="module">import{createClient,getSceneContext}from'/sdk/streamui.js';const client=createClient(),settings=client.settings('plugin',getSceneContext().pluginId),values=await settings.read();let chosen=values.deviceId||'default',signature='';const field=id=>document.getElementById(id);
-field('channel').value=values.channel??-1;field('gain').value=values.gain??1;
-client.on('plugin.desktop-audio.status',value=>{const next=JSON.stringify(value.devices);if(signature!==next){signature=next;field('device').replaceChildren(new Option('系统默认输出','default'),...value.devices.map(d=>new Option(d.name,d.id)));field('device').value=chosen;}field('status').textContent=value.audio.error||('音频：'+value.audio.state+' · '+value.audio.frameRate+' fps');});
-field('device').onchange=()=>chosen=field('device').value;
-document.querySelector('form').onsubmit=async event=>{event.preventDefault();try{await settings.save({enabled:true,deviceId:field('device').value,channel:Number(field('channel').value),gain:Number(field('gain').value)});field('status').textContent='已保存';}catch(error){field('status').textContent=error.message;}};client.start();addEventListener('pagehide',()=>client.stop());</script></html>
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<script src="/config-appearance.js"></script>
+<link rel="stylesheet" href="/config-theme.css">
+<style>
+  body { margin: 0; font: 14px system-ui; color: var(--text); }
+  form, label { display: grid; gap: 14px; }
+  label { gap: 6px; }
+  input, select { font: inherit; background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+  output { color: var(--muted); }
+</style>
+<form>
+  <label>音频输出设备<select id="device"><option value="default">系统默认输出</option></select></label>
+  <label>声道（-1 为混合）<input id="channel" type="number" min="-1" max="31" step="1" value="-1" required></label>
+  <label>增益<input id="gain" type="number" min="0" max="4" step="0.1" value="1" required></label>
+  <output id="status" role="status">更改后自动保存</output>
+  <output id="audio-status" role="status"></output>
+</form>
+<script type="module">
+  import { createClient, getSceneContext, createAutoSave } from '/sdk/streamui.js';
+  const client = createClient(), settings = client.settings('plugin', getSceneContext().pluginId);
+  const values = await settings.read(), field = id => document.getElementById(id);
+  let chosen = values.deviceId || 'default', signature = '';
+  field('channel').value = values.channel ?? -1;
+  field('gain').value = values.gain ?? 1;
+  const labels = { pending: '等待自动保存…', saving: '正在保存…', saved: '已自动保存并生效', error: '自动保存失败' };
+  const autosave = createAutoSave(patch => settings.patch(patch), {
+    onStatus: status => field('status').textContent = labels[status],
+    onError: error => field('status').textContent = error.message,
+  });
+  client.on('plugin.desktop-audio.status', value => {
+    const next = JSON.stringify(value.devices);
+    if (signature !== next) {
+      signature = next;
+      field('device').replaceChildren(new Option('系统默认输出', 'default'), ...value.devices.map(device => new Option(device.name, device.id)));
+      field('device').value = chosen;
+    }
+    field('audio-status').textContent = value.audio.error || ('音频：' + value.audio.state + ' · ' + value.audio.frameRate + ' fps');
+  });
+  for (const [id, key] of [['device', 'deviceId'], ['channel', 'channel'], ['gain', 'gain']]) {
+    const control = field(id);
+    const save = immediate => {
+      if (!control.checkValidity()) { field('status').textContent = '请填写有效的音频参数。'; return; }
+      const value = id === 'device' ? control.value : Number(control.value);
+      if (id === 'device') chosen = value;
+      autosave.update({ [key]: value }, immediate);
+    };
+    if (id !== 'device') control.addEventListener('input', () => save(false));
+    control.addEventListener('change', () => save(true));
+  }
+  document.querySelector('form').onsubmit = event => event.preventDefault();
+  client.start();
+  addEventListener('pagehide', () => { void autosave.flush().catch(() => {}); client.stop(); });
+</script>
+</html>
