@@ -3,13 +3,7 @@
 <meta charset="utf-8">
 <script src="/config-appearance.js"></script>
 <link rel="stylesheet" href="/config-theme.css">
-<style>
-  body { margin: 0; font: 14px system-ui; color: var(--text); }
-  form, label { display: grid; gap: 14px; }
-  label { gap: 6px; }
-  input, select { font: inherit; background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
-  output { color: var(--muted); }
-</style>
+<link rel="stylesheet" href="settings.css">
 <form>
   <label>音频输出设备<select id="device"><option value="default">系统默认输出</option></select></label>
   <label>声道（-1 为混合）<input id="channel" type="number" min="-1" max="31" step="1" value="-1" required></label>

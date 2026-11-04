@@ -1,7 +1,7 @@
 {
   "id": "desktop-audio",
   "name": "桌面音频与频谱",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "assembly": "DesktopAudio.dll",
   "type": "StreamUI.DesktopAudio.DesktopAudioPlugin",
   "capabilities": [
