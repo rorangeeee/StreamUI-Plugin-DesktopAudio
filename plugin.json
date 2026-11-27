@@ -1,7 +1,10 @@
 {
-  "id": "desktop-audio",
+  "id": "when.desktop-audio",
+  "legacyId": "desktop-audio",
+  "author": "when",
   "name": "桌面音频与频谱",
-  "version": "1.0.3",
+  "version": "2.0.0",
+  "license": "MIT",
   "assembly": "DesktopAudio.dll",
   "type": "StreamUI.DesktopAudio.DesktopAudioPlugin",
   "capabilities": [
@@ -9,6 +12,7 @@
     "audio.fft"
   ],
   "settingsPage": "settings.html",
+  "files": ["settings.css"],
   "sdkVersion": 1,
   "repository": "https://github.com/rorangeeee/StreamUI-Plugin-DesktopAudio",
   "build": {
